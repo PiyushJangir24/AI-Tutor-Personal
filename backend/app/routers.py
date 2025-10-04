@@ -63,14 +63,19 @@ async def chat(req: ChatRequest):
         graph = build_graph()
         state = OrchestratorState(message=req.message)
         out_state = await graph.ainvoke(state)
+        # Normalize to plain dict for later access
+        try:
+            state_map = dict(out_state)
+        except Exception:
+            state_map = out_state  # may already behave like a mapping
 
         # Persist assistant result summary
-        result_preview = str(out_state.result)[:500]
+        result_preview = str(state_map.get("result"))[:500]
         await add_message(db, chat_obj, role="assistant", content=result_preview)
 
         # Update mastery based on perceived difficulty and sentiment
         try:
-            analysis = out_state.analysis or {}
+            analysis = state_map.get("analysis") or {}
             subject = analysis.get("subject", "general")
             difficulty = (analysis.get("difficulty") or "beginner").lower()
             sentiment = (analysis.get("sentiment") or "curious").lower()
@@ -96,11 +101,14 @@ async def chat(req: ChatRequest):
             pass
         await db.commit()
 
+        tool_choice = state_map.get("tool_choice")
+        chosen_tool = getattr(tool_choice, "name", "") if tool_choice else ""
+        parameters = getattr(tool_choice, "parameters", {}) if tool_choice else {}
         return ChatResponse(
             user_id=user.id,
             chat_id=chat_obj.id,
-            chosen_tool=out_state.tool_choice.name if out_state.tool_choice else "",
-            parameters=out_state.tool_choice.parameters if out_state.tool_choice else {},
-            result=out_state.result or {},
-            analysis=out_state.analysis,  # type: ignore
+            chosen_tool=chosen_tool,
+            parameters=parameters,
+            result=state_map.get("result") or {},
+            analysis=state_map.get("analysis"),  # type: ignore
         )

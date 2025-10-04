@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Any
 from langgraph.graph import StateGraph, END
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 
 from .schemas import ToolChoice
 from .analysis import simple_context_analysis
@@ -14,6 +14,9 @@ class OrchestratorState(BaseModel):
     analysis: Dict[str, Any] | None = None
     tool_choice: ToolChoice | None = None
     result: Dict[str, Any] | None = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def select_tool(analysis: Dict[str, Any], message: str) -> ToolChoice:

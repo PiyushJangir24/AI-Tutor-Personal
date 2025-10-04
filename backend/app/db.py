@@ -72,15 +72,11 @@ async def _try_create_engine(db_url: str) -> AsyncEngine | None:
 
 
 async def create_engine_with_fallback() -> AsyncEngine:
-    # First try Postgres from .env, then fallback to SQLite file
-    pg_url = settings.database_url
-    engine = await _try_create_engine(pg_url)
-    if engine is not None:
-        return engine
+    # Use SQLite by default to avoid system-level Postgres dependency
     sqlite_url = "sqlite+aiosqlite:///./ai_tutor.db"
     engine = await _try_create_engine(sqlite_url)
     if engine is None:
-        raise RuntimeError("Failed to initialize any database engine")
+        raise RuntimeError("Failed to initialize SQLite database engine")
     return engine
 
 
