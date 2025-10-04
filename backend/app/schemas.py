@@ -47,6 +47,8 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
+    user_id: int
+    chat_id: int
     chosen_tool: str
     parameters: Dict[str, Any]
     result: Dict[str, Any]

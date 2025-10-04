@@ -23,8 +23,8 @@ export default function App() {
         message
       })
       setResponse(data)
-      if (!userId) setUserId(1) // simple client-side sticky id for demo
-      if (!chatId) setChatId(1)
+      if (data?.user_id) setUserId(data.user_id)
+      if (data?.chat_id) setChatId(data.chat_id)
     } catch (err) {
       setError(err?.response?.data || { error: 'network_error', detail: String(err) })
     } finally {

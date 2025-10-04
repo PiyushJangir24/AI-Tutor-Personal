@@ -97,6 +97,8 @@ async def chat(req: ChatRequest):
         await db.commit()
 
         return ChatResponse(
+            user_id=user.id,
+            chat_id=chat_obj.id,
             chosen_tool=out_state.tool_choice.name if out_state.tool_choice else "",
             parameters=out_state.tool_choice.parameters if out_state.tool_choice else {},
             result=out_state.result or {},
